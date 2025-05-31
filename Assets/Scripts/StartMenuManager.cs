@@ -11,7 +11,7 @@ public class StartMenuManager : MonoBehaviour
     public TMP_InputField nameInputField;
     public string playerName;
     public TMP_Text highScore;
-    public int score;
+    public int startScore;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     public void Awake()
@@ -29,13 +29,16 @@ public class StartMenuManager : MonoBehaviour
     }
     public void Start()
     {
-        if (LoadName() != null)
+        string name = LoadName();
+        int score = LoadScore();
+
+        if (!string.IsNullOrEmpty(name))
         {
-            highScore.text = "Best Score : " + LoadName() + " : " + LoadScore().ToString();
+            highScore.text = "Best Score: " + name + " : " + score.ToString();
         }
         else
         {
-            highScore.text = "Best Score:";
+            highScore.text = "Best Score: ";
         }
     }
 
@@ -46,36 +49,24 @@ public class StartMenuManager : MonoBehaviour
         public int score;
     }
 
-    public void SaveName()
+    public void SaveNameScoreFromUI()
     {
-        if (SceneManager.GetActiveScene().buildIndex == 0)
-        {
-            playerName = nameInputField.text;
-            return; // Ensure this only runs in the start menu scene
-        }
-        else
-        { 
-        playerName = LoadName();
-        }
-        SaveData data = new SaveData();
-        data.playername = playerName;
-        string json = JsonUtility.ToJson(data);
-
-        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-        
+        playerName = nameInputField.text;
+        int score = startScore;
     }
-
-    public void SaveScore(int score) //TODO: Figure out why score isn't saving
+    public void SaveNameScore(string name, int score) 
     {
         SaveData data = new SaveData();
+        data.playername = name;
         data.score = score;
+
         string json = JsonUtility.ToJson(data);
         File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
     }
     public string LoadName()
     {
         string path = Application.persistentDataPath + "/savefile.json";
-        if (File.Exists(path) && MainManager.Instance != null)
+        if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
@@ -89,14 +80,14 @@ public class StartMenuManager : MonoBehaviour
     public int LoadScore()
     {
         string path = Application.persistentDataPath + "/savefile.json";
-        if (File.Exists(path) && MainManager.Instance != null)
+        if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
             
-            score = data.score;
-            //highScore.text = "Best Score: " + playerName + " : " + data.score.ToString();
+            startScore = data.score;
+            
         }
-        return score;
+        return startScore;
     }
 }

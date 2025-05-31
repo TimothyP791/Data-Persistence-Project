@@ -19,7 +19,6 @@ public class MainManager : MonoBehaviour
     
     private bool m_Started = false;
     private int m_Points;
-    private string playerName;
     
     private bool m_GameOver = false;
     private static int loadCount = 0;
@@ -27,6 +26,7 @@ public class MainManager : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         loadCount++;
         if (StartMenuManager.Instance != null)
         {
@@ -37,12 +37,6 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (loadCount > 1)
-        {
-            ScoreText2.text = "Best Score: " + StartMenuManager.Instance.LoadName() + " : " + StartMenuManager.Instance.LoadScore().ToString();
-        }
-       
-        playerName = StartMenuManager.Instance.LoadName();
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -78,8 +72,15 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-                
+                int previousBest = StartMenuManager.Instance.LoadScore();
+                if (m_Points > previousBest)
+                {
+                    highScore = m_Points;
+                    string name = StartMenuManager.Instance.LoadName();
+                    StartMenuManager.Instance.SaveNameScore(name, highScore);
+                }
+
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);       
             }
         }
     }
@@ -92,46 +93,7 @@ public class MainManager : MonoBehaviour
 
     public void GameOver()
     {
-        if (m_Points > highScore)
-        {
-            highScore = m_Points;
-            StartMenuManager.Instance.SaveName();
-            StartMenuManager.Instance.SaveScore(highScore);
-        }
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
-
-    /*[System.Serializable]
-    public class SaveData
-    {
-        public int score;
-        public string playername;
-        public int loadCount;
-    }
-    public void SaveNameScore(int score)
-    {
-        SaveData data = new SaveData();
-        data.score = score;
-        data.playername = playerName;
-        data.loadCount = ++loadCount; // Save the load count to save previous player name
-        string json = JsonUtility.ToJson(data);
-
-        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-    }
-
-    public int LoadNameScore()
-    {
-        int highScore = 0;
-        string path = Application.persistentDataPath + "/savefile.json";
-        if (File.Exists(path))
-        {
-            string json = File.ReadAllText(path);
-            SaveData data = JsonUtility.FromJson<SaveData>(json);
-            data.playername = playerName; // Ensure the player name is loaded correctly
-            highScore = data.score;
-            loadCount = data.loadCount; // Load the previous load count
-        }
-        return highScore;
-    }*/
 }
