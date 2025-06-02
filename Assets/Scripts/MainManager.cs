@@ -21,22 +21,21 @@ public class MainManager : MonoBehaviour
     private int m_Points;
     
     private bool m_GameOver = false;
-    private static int loadCount = 0;
+    
 
 
     private void Awake()
     {
         Instance = this;
-        loadCount++;
-        if (StartMenuManager.Instance != null)
-        {
-            ScoreText2.text = "Best Score: " + StartMenuManager.Instance.LoadName() + " : " + StartMenuManager.Instance.LoadScore().ToString();
-        }
         
     }
     // Start is called before the first frame update
     void Start()
     {
+        if (StartMenuManager.Instance != null)
+        {
+            ScoreText2.text = "Best Score: " + StartMenuManager.Instance.LoadName() + " : " + StartMenuManager.Instance.LoadScore().ToString();
+        }
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -52,6 +51,7 @@ public class MainManager : MonoBehaviour
             }
         }
     }
+
 
     private void Update()
     {
@@ -70,16 +70,14 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            int previousBest = StartMenuManager.Instance.LoadScore();
+            if (m_Points > previousBest)
+            {
+                highScore = m_Points;
+                StartMenuManager.Instance.SaveNameScore(StartMenuManager.Instance.playerName, highScore);
+            }
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                int previousBest = StartMenuManager.Instance.LoadScore();
-                if (m_Points > previousBest)
-                {
-                    highScore = m_Points;
-                    string name = StartMenuManager.Instance.LoadName();
-                    StartMenuManager.Instance.SaveNameScore(name, highScore);
-                }
-
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);       
             }
         }
