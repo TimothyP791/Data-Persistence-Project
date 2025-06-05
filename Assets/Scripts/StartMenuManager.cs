@@ -12,13 +12,12 @@ public class StartMenuManager : MonoBehaviour
     public TMP_InputField nameInputField;
     public string playerName;
     public TMP_Text highScore;
-    public int startScore;
-    public bool isInitialized = false;
+    public int startScore; // score to be saved when the game starts
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
-    public void Awake()
+    public void Awake() // Function to ensure only one instance of StartMenuManager exists
     {
-        if (Instance != null)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -27,9 +26,17 @@ public class StartMenuManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        nameInputField.text = LoadName();
+        if (SceneManager.GetActiveScene().buildIndex == 0) // Ensures text field is only set when the Start Menu scene is loaded
+        {
+            playerName = LoadName();
+
+            if (nameInputField != null)
+            {
+                nameInputField.text = playerName;
+            }
+        }
     }
-    public void Start()
+    public void Start() //Starting function to load high score text after application end
     {
         string name = LoadName();
         int score = LoadScore();
@@ -53,42 +60,24 @@ public class StartMenuManager : MonoBehaviour
 #endif
         string tempName = "";
         int tempScore = 0;
-        SaveNameScore(tempName, tempScore);// Change this to store name and highscore once testing of main scene is completed
+        SaveNameScore(tempName, tempScore);// Means to reset the data so the high score is not saved when the game is closed
     }
 
-    [System.Serializable]
+    [System.Serializable] //Serializable class to save player name and score to a JSON file
     public class SaveData
     {
         public string playerName;
         public int score;
     }
-
-    /*public void SaveNameScoreFromUI()
-    {
-        if (LoadScore() == 0)
-        {
-            playerName = nameInputField.text;
-            int score = startScore;
-            SaveNameScore(playerName, score);
-        }
-        else
-        {
-            playerName = nameInputField.text;
-            int score = LoadScore();
-            SaveNameScore(playerName, score);
-        }
-        
-    }*/
-    public void CapturePlayerName()
+    public void CapturePlayerName() //Function to capture the player name from the input field when the game starts so it can be used in main scene
     {
         if (nameInputField != null)
         {
             playerName = nameInputField.text;
-            isInitialized = true;
         }
         
     }
-    public void SaveNameScore(string name, int score) 
+    public void SaveNameScore(string name, int score) //Function to save the player name and score to a JSON file
     {
         SaveData data = new SaveData();
         data.playerName = name;
@@ -97,7 +86,7 @@ public class StartMenuManager : MonoBehaviour
         string json = JsonUtility.ToJson(data);
         File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
     }
-    public string LoadName()
+    public string LoadName() //Function to load the player name from the JSON file
     {
         string path = Application.persistentDataPath + "/savefile.json";
         if (File.Exists(path))
@@ -111,7 +100,7 @@ public class StartMenuManager : MonoBehaviour
         return playerName;
     }
 
-    public int LoadScore()
+    public int LoadScore() //Function to load the score from the JSON file
     {
         string path = Application.persistentDataPath + "/savefile.json";
         if (File.Exists(path))

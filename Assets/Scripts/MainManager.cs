@@ -15,13 +15,14 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public Text ScoreText2;
     public GameObject GameOverText;
-    public int highScore;
-    
+    public int highScore; // Variable to store high score for updating in Game Over
+
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
-    
+    private string playerName; // Variable to store player name after scene load
+
 
 
     private void Awake()
@@ -32,7 +33,8 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (StartMenuManager.Instance != null)
+        playerName = StartMenuManager.Instance.playerName; // Save player name to input field in StartMenuManager from previous scene
+        if (StartMenuManager.Instance != null) // If statement to produce score text ensuring StartMenuManager exists
         {
             ScoreText2.text = "Best Score: " + StartMenuManager.Instance.LoadName() + " : " + StartMenuManager.Instance.LoadScore().ToString();
         }
@@ -70,11 +72,12 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            StartMenuManager.Instance.playerName = playerName; // Stops the player name from being reset on Game Over
             int previousBest = StartMenuManager.Instance.LoadScore();
-            if (m_Points > previousBest)
+            if (m_Points > previousBest) // Check if the current score is higher than the previous best to update high score
             {
                 highScore = m_Points;
-                StartMenuManager.Instance.SaveNameScore(StartMenuManager.Instance.playerName, highScore);
+                StartMenuManager.Instance.SaveNameScore(playerName, highScore);
             }
             if (Input.GetKeyDown(KeyCode.Space))
             {
